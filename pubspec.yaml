@@ -10,9 +10,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_map: ^0.13.1
   http: ^0.13.3
   latlong2: ^0.8.0
-  flutter_map: ^0.13.1
+  flutter_polyline_points: ^1.0.0
 
 dev_dependencies:
   flutter_test:
@@ -22,6 +23,7 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 # The following section is specific to Flutter.
 flutter: null
+
 # To add assets to your package, add an assets section, like this:
 # assets:
 #   - images/a_dot_burr.jpeg
