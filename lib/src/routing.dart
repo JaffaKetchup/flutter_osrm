@@ -4,7 +4,7 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 
-import '../flutter_map_routing.dart';
+import '../flutter_osrm.dart';
 
 class RouteOutput {
   /// Total distance of route (m)
