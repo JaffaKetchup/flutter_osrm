@@ -1,11 +1,11 @@
-import 'dart:convert';
+import 'dart:convert' show json;
 
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 
 import 'shared.dart';
 
-class NearestOutput {
+class OSRMNearest {
   /// Distance in metres away from original location
   final double distance;
 
@@ -15,10 +15,10 @@ class NearestOutput {
   /// Street name (if applicable) of location
   final String name;
 
-  NearestOutput(this.distance, this.location, this.name);
+  OSRMNearest(this.distance, this.location, this.name);
 }
 
-Future<List<NearestOutput>> nearestLocation(Profile profile, LatLng coord,
+Future<List<OSRMNearest>> osrmNearest(OSRMProfile profile, LatLng coord,
     [int n = 1]) async {
   // Initialise HTTP client
   final client = http.Client();
@@ -34,7 +34,7 @@ Future<List<NearestOutput>> nearestLocation(Profile profile, LatLng coord,
   if (data["code"] != "Ok")
     return Future.error(
       OSRMError(
-        Service.nearest,
+        'nearest',
         data["code"],
         data["message"],
       ),
@@ -46,7 +46,7 @@ Future<List<NearestOutput>> nearestLocation(Profile profile, LatLng coord,
   // Return formatted data
   return (data["waypoints"] as List).map(
     (val) {
-      return NearestOutput(
+      return OSRMNearest(
         val["distance"],
         LatLng(
           val["location"][1],
