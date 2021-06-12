@@ -1,3 +1,3 @@
-# flutter_map_routing
+# flutter_osrm
 
-A routing engine using OSRM for flutter_map
+A wrapper for the Open Source Routing Machine designed for Flutter including optional extra functionality for flutter_map
