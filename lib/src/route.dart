@@ -3,10 +3,26 @@ import 'dart:convert' show json;
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
+import 'package:meta/meta.dart';
 
-import 'shared.dart';
-import 'geocoding.dart' as geocoding;
+import 'enums.dart';
+import 'public.dart';
 
+////////////////////////////////////////////
+/*        FROM THIS POINT ONWARD          */
+/* experimental functionality is mixed in */
+/*      with working functionality        */
+/*                                        */
+/*    Any comment in red will warn of     */
+/*        an experimental feature         */
+////////////////////////////////////////////
+
+//!
+import 'experimental/geocoding.dart' as geocoding;
+//!
+import 'experimental/shared.dart' as experimental;
+
+/// The returned object when using the 'route' service
 class OSRMRoute {
   /// Total distance of route (m)
   final num totalDistance;
@@ -17,42 +33,32 @@ class OSRMRoute {
   /// List of all nodes on route
   final List<LatLng> nodesLocations;
 
-  /// Optional list of address' of waypoints
+  //!
+  /// EXPERIMENTAL
+  ///
+  /// Potential list of address' of waypoints
   final List<String>? waypointAddresses;
 
-  OSRMRoute(this.totalDistance, this.totalDuration, this.nodesLocations,
-      [this.waypointAddresses]);
-}
-
-enum OSRMRouteGeometries {
-  polyline,
-  polyline6,
-  geojson,
-}
-enum OSRMRouteOverview {
-  simplified,
-  full,
-  none,
-}
-enum OSRMRouteAnnotation {
-  all,
-  none,
-  nodes,
-  distance,
-  duration,
-  datasources,
-  weight,
-  speed,
+  /// Creates an object to be returned from the 'route' service
+  @internal
+  OSRMRoute(
+    this.totalDistance,
+    this.totalDuration,
+    this.nodesLocations, [
+    //!
+    this.waypointAddresses,
+  ]);
 }
 
 /// Use the Route API, and return a route that can be easily processed and drawn. Also optionally reverse geocode waypoints using Nominatim
-Future<OSRMRoute> osrmRoute(OSRMProfile profile, List<LatLng> waypoints,
+Future<OSRMRoute> routeInternalMain(OSRMProfile profile, List<LatLng> waypoints,
     [bool reverseGeocode = false]) async {
   // Make appropriate API request through fullData function
-  final List<dynamic> apiResponse = await osrmRoute_(
+  final List<dynamic> apiResponse = await routeInternalFull(
     profile,
     waypoints,
-    overview: OSRMRouteOverview.full,
+    //!
+    overview: experimental.OSRMOverview.full,
   );
 
   // Convert the polyline to a list of LatLng nodes
@@ -61,9 +67,11 @@ Future<OSRMRoute> osrmRoute(OSRMProfile profile, List<LatLng> waypoints,
       .map((point) => LatLng(point.latitude, point.longitude))
       .toList();
 
+  //!
   // If reverseGeocode has been specified, perform reverse geocoding through Nominatim
   List<String>? outGeocode;
-  if (reverseGeocode) outGeocode = await geocoding.reverseGeocode(waypoints);
+  if (reverseGeocode)
+    outGeocode = await geocoding.reverseGeocodeInternal(waypoints);
 
   // Return formatted data
   return OSRMRoute(
@@ -73,20 +81,26 @@ Future<OSRMRoute> osrmRoute(OSRMProfile profile, List<LatLng> waypoints,
           .round(),
     ),
     nodes,
+    //!
     outGeocode,
   );
 }
 
 /// Use the Route API, and return the raw JSON body
 // ignore: non_constant_identifier_names
-Future<List<Map<String, dynamic>>> osrmRoute_(
+Future<List<Map<String, dynamic>>> routeInternalFull(
   OSRMProfile profile,
   List<LatLng> coords, {
   int alternatives = 0,
   bool steps = false,
-  OSRMRouteGeometries geometries = OSRMRouteGeometries.polyline,
-  OSRMRouteOverview overview = OSRMRouteOverview.simplified,
-  List<OSRMRouteAnnotation> annotations = const [OSRMRouteAnnotation.none],
+  //!
+  experimental.OSRMGeometries geometries = experimental.OSRMGeometries.polyline,
+  //!
+  experimental.OSRMOverview overview = experimental.OSRMOverview.simplified,
+  //!
+  List<experimental.OSRMAnnotation> annotations = const [
+    experimental.OSRMAnnotation.none
+  ],
 }) async {
   // Initialise HTTP client
   final client = http.Client();
@@ -99,14 +113,15 @@ Future<List<Map<String, dynamic>>> osrmRoute_(
   }
   formattedCoords = formattedCoords.substring(0, formattedCoords.length - 1);
 
+  //!
   // Format annotations parameter
   String formattedAnnotations = "";
-  if (annotations.contains(OSRMRouteAnnotation.all))
+  if (annotations.contains(experimental.OSRMAnnotation.all))
     formattedAnnotations = "true";
-  else if (annotations.contains(OSRMRouteAnnotation.none))
+  else if (annotations.contains(experimental.OSRMAnnotation.none))
     formattedAnnotations = "false";
   else {
-    for (OSRMRouteAnnotation item in annotations) {
+    for (experimental.OSRMAnnotation item in annotations) {
       formattedAnnotations +=
           item.toString().split('RouteAnnotation.')[1] + ',';
     }
@@ -117,7 +132,7 @@ Future<List<Map<String, dynamic>>> osrmRoute_(
   // Make request and format to JSON
   http.Response res = await client.get(
     Uri.parse(
-        'https://routing.openstreetmap.de/routed-${profile.toString().split('Profile.')[1]}/route/v1/driving/$formattedCoords?alternatives=$alternatives&steps=$steps&annotations=$formattedAnnotations&geometries=${geometries.toString().split('RouteGeometries.')[1]}&overview=${overview.toString().split('RouteOverview.')[1] == 'none' ? 'false' : overview.toString().split('RouteOverview.')[1]}'),
+        'https://routing.openstreetmap.de/routed-${profile.toString().split('OSRMProfile.')[1]}/route/v1/driving/$formattedCoords?alternatives=$alternatives&steps=$steps&annotations=$formattedAnnotations&geometries=${geometries.toString().split('OSRMGeometries.')[1]}&overview=${overview.toString().split('OSRMOverview.')[1] == 'none' ? 'false' : overview.toString().split('OSRMOverview.')[1]}'),
   );
   final data = json.decode(res.body);
 
