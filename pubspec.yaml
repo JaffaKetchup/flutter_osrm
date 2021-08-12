@@ -1,7 +1,7 @@
 name: flutter_osrm
 description: A wrapper for the Open Source Routing Machine designed for Flutter
   including optional extra functionality for flutter_map
-version: 1.0.0
+version: 0.1.0
 homepage: null
 
 environment:
