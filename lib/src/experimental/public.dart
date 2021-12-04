@@ -1,7 +1,7 @@
 import 'package:meta/meta.dart';
 
 import '../../experimental.dart';
-import '../route.dart';
+import '../route/route.dart';
 import 'shared.dart';
 
 /// The experimental master OSRM object used to make advanced, experimental requests and get back the simple, formatted response usually needed

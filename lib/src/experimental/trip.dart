@@ -5,9 +5,9 @@ import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:meta/meta.dart';
 
-import '../enums.dart';
+import '../shared.dart';
 import '../exts.dart';
-import '../public.dart';
+import '../main.dart';
 import 'shared.dart';
 import 'geocoding.dart' as geocoding;
 

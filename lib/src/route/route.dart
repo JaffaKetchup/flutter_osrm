@@ -1,12 +1,10 @@
-import 'dart:convert' show json;
-
+import 'package:flutter_osrm/src/shared/service.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:meta/meta.dart';
 
-import 'enums.dart';
-import 'public.dart';
+import '../shared.dart';
+import 'models.dart';
 
 ////////////////////////////////////////////
 /*        FROM THIS POINT ONWARD          */
@@ -17,13 +15,16 @@ import 'public.dart';
 /*        an experimental feature         */
 ////////////////////////////////////////////
 
-//!
-import 'experimental/geocoding.dart' as geocoding;
-//!
-import 'experimental/shared.dart' as experimental;
+/// An implementation of `OSRMProcessed` representing a processed 'nearest' response
+///
+/// To use fields specific to this object, you should use the 'as' operator to specify that the `OSRMProcessed` object returned from the `.processed` getter is actually a `OSRMRoute` object (for example, `obj as OSRMNearest`)
+class OSRMRoute implements OSRMProcessed {
+  /// The service that this processed object represents, also represented by the name
+  ///
+  /// To use fields specific to this object, you should use the 'as' operator to specify that the `OSRMProcessed` object returned from the `.processed` getter is actually a `OSRM{service}` object (for example, `obj as OSRMNearest`)
+  @override
+  OSRMService service = OSRMService.route;
 
-/// The returned object when using the 'route' service
-class OSRMRoute {
   /// Total distance of route (m)
   final num totalDistance;
 
@@ -33,23 +34,33 @@ class OSRMRoute {
   /// List of all nodes on route
   final List<LatLng> nodesLocations;
 
-  //!
-  /// EXPERIMENTAL
-  ///
-  /// Potential list of address' of waypoints
-  final List<String>? waypointAddresses;
-
-  /// Creates an object to be returned from the 'route' service
+  /// The full API response as a set of classes and sub-classes designed to make navigating the API response easier
+  final Route fullResponse;
   @internal
   OSRMRoute(
     this.totalDistance,
     this.totalDuration,
-    this.nodesLocations, [
-    //!
-    this.waypointAddresses,
-  ]);
+    this.nodesLocations,
+    this.fullResponse,
+  );
 }
 
+@internal
+OSRMRoute processRoute(Map<String, dynamic> data) => OSRMRoute(
+      data["routes"][0]["distance"],
+      Duration(
+        seconds: double.parse(data["routes"][0]["duration"].toString()).round(),
+      ),
+      PolylinePoints()
+          .decodePolyline(data["routes"][0]["geometry"])
+          .map((point) => LatLng(point.latitude, point.longitude))
+          .toList(),
+      Route.fromJson(data),
+    );
+
+
+
+/*
 /// Use the Route API, and return a route that can be easily processed and drawn. Also optionally reverse geocode waypoints using Nominatim
 Future<OSRMRoute> routeInternalMain(OSRMProfile profile, List<LatLng> waypoints,
     [bool reverseGeocode = false]) async {
@@ -84,8 +95,8 @@ Future<OSRMRoute> routeInternalMain(OSRMProfile profile, List<LatLng> waypoints,
     //!
     outGeocode,
   );
-}
-
+}*/
+/*
 /// Use the Route API, and return the raw JSON body
 // ignore: non_constant_identifier_names
 Future<List<Map<String, dynamic>>> routeInternalFull(
@@ -153,3 +164,4 @@ Future<List<Map<String, dynamic>>> routeInternalFull(
   //? if (alternatives != 0) return data;
   return [data];
 }
+*/
