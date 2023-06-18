@@ -1,0 +1,18 @@
+name: osrm_example
+description: The example application for 'flutter_osrm', showcasing it's functionality and use-cases.
+publish_to: "none"
+
+version: 1.0.0
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_osrm:
+    path: ../
+
+flutter:
+  uses-material-design: true

@@ -1,33 +1,36 @@
-export 'package:latlong2/latlong.dart';
+import 'src/services/match/result.dart';
+import 'src/services/nearest/result.dart';
+import 'src/services/route/result.dart';
+import 'src/services/table/result.dart';
+import 'src/services/trip/result.dart';
+import 'src/utils/rate_limited_stream.dart';
 
-export 'src/main.dart';
-//export 'src/shared/options.dart';
-//export 'src/shared/service.dart';
-//export 'src/shared.dart' hide OSRMProcessed, ServiceExtensions;
-//export 'src/options.dart' hide OSRMServiceOptions;
+class OSRM {
+  factory OSRM() => _instance;
 
-//export 'src/nearest/nearest.dart' hide processNearest;
-//export 'src/route/route.dart' hide processRoute;
+  factory OSRM.initialize({
+    String urlTemplate =
+        'https://routing.openstreetmap.de/routed-{p}/{s}/v1/{p}/{l}.json?{q}',
+    Duration osrmRateLimiting = const Duration(milliseconds: 500),
+  }) =>
+      _instance = OSRM._(urlTemplate, osrmRateLimiting);
 
-/* EXAMPLE BASIC USAGE */
+  OSRM._(this.urlTemplate, Duration osrmRateLimiting)
+      : osrmRateLimitedStream = RateLimitedStream(emitEvery: osrmRateLimiting);
 
-/*
-import 'package:flutter_osrm/flutter_osrm.dart';
+  static late OSRM _instance;
 
-void osrmExample() async {
-  OSRM(OSRMService.nearest, 'car').
+  final RateLimitedStream osrmRateLimitedStream;
 
+  final String urlTemplate;
 
+  Future<void> dispose() async {
+    await osrmRateLimitedStream.close();
+  }
 
-
-
-  final OSRM osrm = OSRM(
-    profile: 'car',
-    service: OSRMService.nearest,
-  );
-  await osrm.makeRequest([]);
-
-  final Map<String, dynamic>? raw = osrm.response;
-  final OSRMNearest processed = osrm.processed as OSRMNearest;
+  MatchResult match() => matchImpl(this);
+  NearestResult nearest() => nearestImpl(this);
+  RouteResult route() => routeImpl(this);
+  TableResult table() => tableImpl(this);
+  TripResult trip() => tripImpl(this);
 }
-*/
